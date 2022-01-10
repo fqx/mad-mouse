@@ -1,7 +1,8 @@
 let barrier = 0
 let distance = 0
 let direction = false
-basic.forever(function () {
+let isblocked = 0
+function backOff () {
     barrier = Tinybit.Ultrasonic_Car()
     if (barrier < 15) {
         basic.showLeds(`
@@ -12,8 +13,15 @@ basic.forever(function () {
             . . # . .
             `)
         Tinybit.CarCtrlSpeed(Tinybit.CarState.Car_Back, 80)
+        basic.pause(200)
+        return 1
+    } else {
+        return 0
     }
-    distance = randint(1, 3)
+}
+basic.forever(function () {
+    backOff()
+    distance = randint(1, 10)
     direction = Math.randomBoolean()
     if (direction == true) {
         basic.showLeds(`
@@ -24,6 +32,8 @@ basic.forever(function () {
             . . # . .
             `)
         Tinybit.CarCtrl(Tinybit.CarState.Car_Left)
+        basic.pause(200)
+        Tinybit.CarCtrl(Tinybit.CarState.Car_Stop)
     } else {
         basic.showLeds(`
             . . # . .
@@ -33,9 +43,14 @@ basic.forever(function () {
             . . # . .
             `)
         Tinybit.CarCtrl(Tinybit.CarState.Car_Right)
+        basic.pause(200)
+        Tinybit.CarCtrl(Tinybit.CarState.Car_Stop)
     }
-    basic.pause(1000)
     for (let index = 0; index < distance; index++) {
+        isblocked = backOff()
+        if (isblocked == 1) {
+            break;
+        }
         basic.showLeds(`
             . . # . .
             . . # . .
@@ -44,6 +59,7 @@ basic.forever(function () {
             . . # . .
             `)
         Tinybit.CarCtrlSpeed(Tinybit.CarState.Car_Run, 60)
+        basic.pause(500)
     }
-    basic.pause(1000)
+    Tinybit.CarCtrl(Tinybit.CarState.Car_Stop)
 })
